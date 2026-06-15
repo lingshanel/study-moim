@@ -1,134 +1,129 @@
-# 스터디모임 ERD 초안
+# 스터디모임 ERD
 
-스터디모임의 ERD는 MVP와 확장 기능을 나누어 생각합니다. 처음에는 회원, 카테고리, 모집글, 댓글부터 시작하고, 이후 좋아요, 북마크, 이미지, 관리자 기능을 추가합니다.
-
-## 관계 초안
+현재 구현된 JPA 엔티티를 기준으로 정리한 ERD입니다. 대표 이미지는 별도 테이블을 두지 않고 `study_posts.image_url`에 로컬 파일 접근 경로를 저장합니다.
 
 ```mermaid
 erDiagram
   USERS ||--o{ STUDY_POSTS : writes
   USERS ||--o{ COMMENTS : writes
-  USERS ||--o{ LIKES : likes
-  USERS ||--o{ BOOKMARKS : bookmarks
-  USERS ||--o{ IMAGES : uploads
-
-  CATEGORIES ||--o{ STUDY_POSTS : categorizes
-
+  USERS ||--o{ LIKES : reacts
+  USERS ||--o{ BOOKMARKS : saves
+  USERS ||--o{ POST_REPORTS : reports
+  CATEGORIES ||--o{ STUDY_POSTS : classifies
   STUDY_POSTS ||--o{ COMMENTS : has
   STUDY_POSTS ||--o{ LIKES : receives
-  STUDY_POSTS ||--o{ BOOKMARKS : saved_by
-  STUDY_POSTS ||--o{ IMAGES : has
-
+  STUDY_POSTS ||--o{ BOOKMARKS : receives
+  STUDY_POSTS ||--o{ POST_REPORTS : reported
   COMMENTS ||--o{ COMMENTS : replies
+  COMMENTS ||--o{ POST_REPORTS : reported
+
+  USERS {
+    bigint id PK
+    varchar email UK
+    varchar password
+    varchar nickname UK
+    varchar role
+    varchar status
+    varchar ban_reason
+    int failed_login_attempts
+    datetime login_locked_until
+    datetime created_at
+    datetime updated_at
+  }
+
+  CATEGORIES {
+    bigint id PK
+    varchar name UK
+    varchar slug UK
+    datetime created_at
+    datetime updated_at
+  }
+
+  STUDY_POSTS {
+    bigint id PK
+    bigint user_id FK
+    bigint category_id FK
+    varchar title
+    text content
+    varchar study_type
+    varchar location
+    varchar image_url
+    varchar recruitment_status
+    int max_members
+    bigint view_count
+    bigint like_count
+    bigint bookmark_count
+    datetime created_at
+    datetime updated_at
+  }
+
+  COMMENTS {
+    bigint id PK
+    bigint study_post_id FK
+    bigint user_id FK
+    bigint parent_comment_id FK
+    varchar content
+    boolean deleted
+    datetime created_at
+    datetime updated_at
+  }
+
+  LIKES {
+    bigint id PK
+    bigint user_id FK
+    bigint study_post_id FK
+  }
+
+  BOOKMARKS {
+    bigint id PK
+    bigint user_id FK
+    bigint study_post_id FK
+  }
+
+  POST_REPORTS {
+    bigint id PK
+    bigint study_post_id FK
+    bigint comment_id FK
+    bigint reporter_id FK
+    varchar target_type
+    varchar reason
+    varchar status
+    datetime created_at
+    datetime resolved_at
+  }
 ```
 
-## MVP 테이블
+## 독립 운영 테이블
 
-### users
+다음 테이블은 특정 도메인 엔티티와 외래키로 직접 연결하지 않고 인증·운영 이력을 보관합니다.
 
-| 컬럼 | 설명 |
-| --- | --- |
-| id | PK |
-| email | 로그인 이메일 |
-| password | 비밀번호 hash |
-| nickname | 닉네임 |
-| role | USER, ADMIN |
-| status | ACTIVE, DELETED, BANNED |
-| created_at | 생성일 |
-| updated_at | 수정일 |
-
-### categories
+### password_reset_verifications
 
 | 컬럼 | 설명 |
 | --- | --- |
 | id | PK |
-| name | 카테고리 이름 |
-| slug | URL/검색용 값 |
-| created_at | 생성일 |
-| updated_at | 수정일 |
+| email, nickname | 본인 확인 대상 |
+| code_hash, code_expires_at | 인증번호 해시와 만료 시각 |
+| reset_token_hash, reset_token_expires_at | 일회용 재설정 토큰 해시와 만료 시각 |
+| verified_at, consumed_at | 인증 및 사용 완료 시각 |
+| failed_code_attempts | 인증번호 실패 횟수 |
+| created_at | 생성 시각 |
 
-### study_posts
-
-| 컬럼 | 설명 |
-| --- | --- |
-| id | PK |
-| user_id | 작성자 FK |
-| category_id | 카테고리 FK |
-| title | 제목 |
-| content | 내용 |
-| study_type | ONLINE, OFFLINE, HYBRID |
-| location | 오프라인 장소 |
-| recruitment_status | RECRUITING, CLOSED |
-| max_members | 모집 인원 |
-| view_count | 조회수 |
-| like_count | 좋아요 수 |
-| bookmark_count | 북마크 수 |
-| created_at | 생성일 |
-| updated_at | 수정일 |
-
-### comments
+### admin_action_logs
 
 | 컬럼 | 설명 |
 | --- | --- |
 | id | PK |
-| study_post_id | 모집글 FK |
-| user_id | 작성자 FK |
-| parent_comment_id | 대댓글 FK |
-| content | 댓글 내용 |
-| is_deleted | 삭제 여부 |
-| created_at | 생성일 |
-| updated_at | 수정일 |
+| action_type | 수행한 관리자 작업 |
+| target_type, target_id | 작업 대상 종류와 ID |
+| summary | 제재 사유·신고 사유 등 작업 요약 |
+| admin_id, admin_nickname | 작업 당시 관리자 정보 스냅샷 |
+| created_at | 수행 시각 |
 
-## 확장 테이블
+## 주요 제약과 설계
 
-### likes
-
-| 컬럼 | 설명 |
-| --- | --- |
-| id | PK |
-| user_id | 사용자 FK |
-| study_post_id | 모집글 FK |
-| created_at | 생성일 |
-
-`user_id + study_post_id` unique 제약을 둘 예정입니다.
-
-### bookmarks
-
-| 컬럼 | 설명 |
-| --- | --- |
-| id | PK |
-| user_id | 사용자 FK |
-| study_post_id | 모집글 FK |
-| created_at | 생성일 |
-
-`user_id + study_post_id` unique 제약을 둘 예정입니다.
-
-### images
-
-| 컬럼 | 설명 |
-| --- | --- |
-| id | PK |
-| user_id | 업로드 사용자 FK |
-| study_post_id | 모집글 FK |
-| original_name | 원본 파일명 |
-| stored_name | 저장 파일명 |
-| url | 접근 경로 |
-| content_type | 파일 타입 |
-| size | 파일 크기 |
-| created_at | 생성일 |
-
-## 선택 테이블
-
-### admin_logs
-
-관리자 기능을 조금 더 정리하고 싶을 때 추가합니다.
-
-| 컬럼 | 설명 |
-| --- | --- |
-| id | PK |
-| admin_user_id | 관리자 FK |
-| action | 작업 종류 |
-| target_type | 대상 타입 |
-| target_id | 대상 id |
-| reason | 사유 |
-| created_at | 생성일 |
+- `users.email`, `users.nickname`, `categories.name`, `categories.slug`는 중복될 수 없습니다.
+- 좋아요와 북마크는 각각 `(user_id, study_post_id)` 복합 unique 제약으로 중복 반응을 막습니다.
+- 답글은 `comments.parent_comment_id` 자기 참조 관계로 표현합니다.
+- 댓글 삭제는 답글 구조를 보존하기 위해 실제 행을 지우지 않고 `deleted` 상태로 처리합니다.
+- 신고는 모집글을 항상 참조하고, 댓글 신고일 때만 `comment_id`를 함께 저장합니다.

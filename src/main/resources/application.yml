@@ -2,10 +2,15 @@ spring:
   application:
     name: study-moim
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/study_moim?serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:}
+    username: ${DB_USERNAME:study_moim}
+    password: ${DB_PASSWORD:study_moim_dev}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -16,13 +21,40 @@ spring:
         format_sql: true
     open-in-view: false
 
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${MAIL_STARTTLS:false}
+
 server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework
   servlet:
     session:
       cookie:
         http-only: true
         same-site: lax
+        secure: ${SESSION_COOKIE_SECURE:false}
 
 logging:
   level:
     org.hibernate.SQL: debug
+
+study-moim:
+  upload:
+    directory: ${UPLOAD_DIR:uploads}
+  mail:
+    enabled: ${MAIL_ENABLED:false}
+    from: ${MAIL_FROM:no-reply@study-moim.local}
+  admin:
+    enabled: ${ADMIN_ENABLED:false}
+    email: ${ADMIN_EMAIL:admin@study-moim.local}
+    nickname: ${ADMIN_NICKNAME:superadmin}
+    password: ${ADMIN_PASSWORD:}

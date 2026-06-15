@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스터디모임 운영실</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/polish.css">
+</head>
+<body>
+  <main class="admin-shell">
+    <section class="admin-panel">
+      <div class="panel-header admin-cover-header">
+        <div>
+          <p class="eyebrow">study moim ops</p>
+          <h1>스터디모임 운영실</h1>
+        </div>
+        <button class="ghost-button" id="adminLogoutButton" type="button" hidden>로그아웃</button>
+      </div>
+
+      <form class="admin-login" id="adminLoginForm">
+        <label>
+          관리자 닉네임
+          <input id="adminNicknameInput" type="text" autocomplete="username" required>
+        </label>
+        <label>
+          관리자 비밀번호
+          <input id="adminPasswordInput" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="primary-button" type="submit">운영실 입장</button>
+        <p class="form-message" id="adminLoginMessage"></p>
+      </form>
+
+      <section class="admin-dashboard" id="adminDashboard" hidden>
+        <aside class="admin-tab-rail" aria-label="관리자 메뉴">
+          <button class="admin-tab active" type="button" data-admin-tab="users">회원</button>
+          <button class="admin-tab" type="button" data-admin-tab="posts">모집글</button>
+          <button class="admin-tab" type="button" data-admin-tab="comments">댓글</button>
+          <button class="admin-tab" type="button" data-admin-tab="reports">신고</button>
+          <button class="admin-tab" type="button" data-admin-tab="logs">기록</button>
+        </aside>
+
+        <div class="admin-page-stack">
+          <section class="admin-section active" data-admin-section="users">
+            <div class="admin-tools">
+              <label>
+                회원 검색
+                <input id="adminUserSearchInput" type="search" placeholder="닉네임 또는 이메일">
+              </label>
+              <button class="ghost-button small-button" id="refreshAdminButton" type="button">새로고침</button>
+            </div>
+            <div class="panel-header compact">
+              <h2>회원 관리</h2>
+              <span id="adminUserCount">0명</span>
+            </div>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>닉네임</th>
+                    <th>이메일</th>
+                    <th>권한</th>
+                    <th>상태</th>
+                    <th class="admin-action-column">관리</th>
+                  </tr>
+                </thead>
+                <tbody id="adminUserTableBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="admin-section" data-admin-section="posts">
+            <div class="admin-tools">
+              <label>
+                모집글 검색
+                <input id="adminPostSearchInput" type="search" placeholder="제목 또는 내용">
+              </label>
+              <button class="ghost-button small-button" id="adminPostSearchButton" type="button">검색</button>
+            </div>
+            <div class="panel-header compact">
+              <h2>모집글 관리</h2>
+              <span>최근 30개</span>
+            </div>
+            <div class="admin-split">
+              <div class="admin-table-wrap">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>제목</th>
+                      <th>작성자</th>
+                      <th>상태</th>
+                      <th>댓글</th>
+                      <th class="admin-action-column">관리</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminPostTableBody"></tbody>
+                </table>
+              </div>
+              <aside class="admin-preview" id="adminPostPreview">
+                <p class="eyebrow">post preview</p>
+                <h3>모집글을 선택해주세요</h3>
+                <p>모집글을 클릭하면 상세 미리보기 창에서 삭제와 댓글 확인을 이어갈 수 있습니다.</p>
+              </aside>
+            </div>
+          </section>
+
+          <section class="admin-section" data-admin-section="comments">
+            <div class="admin-tools">
+              <label>
+                선택한 글 댓글 검색
+                <input id="adminCommentSearchInput" type="search" placeholder="작성자 또는 댓글 내용">
+              </label>
+            </div>
+            <div class="panel-header compact">
+              <h2>댓글 관리</h2>
+              <span id="adminCommentTitle">모집글을 선택해주세요</span>
+            </div>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>작성자</th>
+                    <th>내용</th>
+                    <th>상태</th>
+                    <th class="admin-action-column">관리</th>
+                  </tr>
+                </thead>
+                <tbody id="adminCommentTableBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="admin-section" data-admin-section="reports">
+            <div class="admin-tools">
+              <label>
+                신고 검색
+                <input id="adminReportSearchInput" type="search" placeholder="글 제목, 신고자, 사유">
+              </label>
+              <label>
+                상태
+                <select id="adminReportStatusSelect">
+                  <option value="PENDING">미처리</option>
+                  <option value="RESOLVED">처리완료</option>
+                  <option value="">전체</option>
+                </select>
+              </label>
+            </div>
+            <div class="panel-header compact">
+              <h2>신고 관리</h2>
+              <span id="adminReportCount">0건</span>
+            </div>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>대상</th>
+                    <th>신고자</th>
+                    <th>사유</th>
+                    <th>상태</th>
+                    <th class="admin-action-column">관리</th>
+                  </tr>
+                </thead>
+                <tbody id="adminReportTableBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="admin-section" data-admin-section="logs">
+            <div class="admin-tools">
+              <p class="admin-log-help">회원 제재, 모집글·댓글 삭제, 신고 처리 완료 기록을 최근 순으로 표시합니다.</p>
+              <button class="ghost-button small-button" id="adminLogRefreshButton" type="button">새로고침</button>
+            </div>
+            <div class="panel-header compact">
+              <h2>운영 기록</h2>
+              <span id="adminLogCount">0건</span>
+            </div>
+            <div class="admin-table-wrap">
+              <table class="admin-table admin-log-table">
+                <thead>
+                  <tr>
+                    <th>처리</th>
+                    <th>대상</th>
+                    <th>내용</th>
+                    <th>관리자</th>
+                    <th>처리 시각</th>
+                  </tr>
+                </thead>
+                <tbody id="adminLogTableBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <p class="form-message" id="adminActionMessage"></p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="adminNoticeDialog">
+    <div class="dialog-card admin-notice-card">
+      <button class="close-button" type="button" id="adminNoticeCloseButton" aria-label="닫기">×</button>
+      <p class="label">study moim ops</p>
+      <h2 id="adminNoticeTitle">처리가 완료되었습니다</h2>
+      <p id="adminNoticeMessage">관리자 화면을 새로 갱신했습니다.</p>
+      <button class="primary-button" type="button" id="adminNoticeOkButton">확인</button>
+    </div>
+  </dialog>
+
+  <dialog id="adminBanDialog">
+    <form class="dialog-card admin-notice-card" id="adminBanForm" method="dialog">
+      <button class="close-button" type="button" id="adminBanCloseButton" aria-label="닫기">×</button>
+      <p class="label">member restriction</p>
+      <h2>회원 제재 사유</h2>
+      <p id="adminBanTargetText">제재할 회원을 확인해주세요.</p>
+      <label>
+        사유
+        <textarea id="adminBanReasonInput" rows="4" maxlength="300" placeholder="예: 반복적인 광고성 게시글 작성"></textarea>
+      </label>
+      <p class="form-message" id="adminBanMessage"></p>
+      <button class="danger-button" type="submit">제재 적용</button>
+    </form>
+  </dialog>
+
+  <dialog id="adminPostDialog">
+    <div class="dialog-card admin-post-dialog-card">
+      <button class="close-button" type="button" id="adminPostDialogCloseButton" aria-label="닫기">×</button>
+      <p class="label">post preview</p>
+      <h2 id="adminPostDialogTitle">모집글 미리보기</h2>
+      <dl id="adminPostDialogMeta"></dl>
+      <p id="adminPostDialogContent"></p>
+      <div class="dialog-actions">
+        <button class="ghost-button" type="button" id="adminPostDialogCommentsButton">댓글 보기</button>
+        <button class="danger-button" type="button" id="adminPostDialogDeleteButton">삭제</button>
+      </div>
+    </div>
+  </dialog>
+  <script src="/admin.js"></script>
+</body>
+</html>
