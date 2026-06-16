@@ -1763,7 +1763,7 @@ sideNextFeatureButton.addEventListener("click", () => {
   if (!requireLogin("개발 현황은 로그인 후 마이룸에서 확인할 수 있습니다.")) {
     return;
   }
-  myPageSummary.textContent = "핵심 기능과 관리자·보안 기능 구현을 마치고 전체 사용자 흐름을 최종 점검하고 있습니다.";
+  myPageSummary.textContent = "프로젝트 2 스터디모임은 주요 기능, 관리자·보안 기능, 배포와 문서화까지 완료했습니다.";
   myPageDialog.showModal();
 });
 document.querySelectorAll("[data-quick-filter]").forEach((button) => {
