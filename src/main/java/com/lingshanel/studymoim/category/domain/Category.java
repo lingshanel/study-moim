@@ -38,6 +38,10 @@ public class Category {
         this.slug = slug;
     }
 
+    public void updateName(String name) {
+        this.name = name;
+    }
+
     @PrePersist
     void onCreate() {
         LocalDateTime now = LocalDateTime.now();

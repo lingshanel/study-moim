@@ -28,9 +28,10 @@ public class CategoryInitializer implements CommandLineRunner {
         );
 
         for (CategorySeed seed : seeds) {
-            if (!categoryRepository.existsBySlug(seed.slug())) {
-                categoryRepository.save(new Category(seed.name(), seed.slug()));
-            }
+            Category category = categoryRepository.findBySlug(seed.slug())
+                    .orElseGet(() -> new Category(seed.name(), seed.slug()));
+            category.updateName(seed.name());
+            categoryRepository.save(category);
         }
     }
 
