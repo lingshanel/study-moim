@@ -12,6 +12,8 @@ spring:
     username: ${DB_USERNAME:study_moim}
     password: ${DB_PASSWORD:study_moim_dev}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-init-sql: ${DB_CONNECTION_INIT_SQL:SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci}
 
   jpa:
     hibernate:
